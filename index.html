@@ -1,0 +1,644 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="GhostTester AI is a local Unity and Unreal SDK for autonomous collision and clipping bug detection."
+    />
+    <title>GhostTester AI | Game QA Telemetry SDK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#0A0B0D",
+              surface: "#101216",
+              panel: "#14171C",
+              line: "#1F242F",
+              cyan: "#06B6D4",
+              orange: "#FF5722",
+            },
+            fontFamily: {
+              sans: ["DM Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+              display: ["Space Grotesk", "DM Sans", "sans-serif"],
+              mono: ["IBM Plex Mono", "monospace"],
+            },
+            boxShadow: {
+              insetButton:
+                "inset 0 1px 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.3)",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        background: #0a0b0d;
+        color: #e7eaf0;
+        font-family: "DM Sans", sans-serif;
+      }
+      .font-display {
+        font-family: "Space Grotesk", sans-serif;
+      }
+      .font-mono {
+        font-family: "IBM Plex Mono", monospace;
+      }
+      .hairline {
+        border-color: #1f242f;
+      }
+      .noise {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
+      }
+      .code-key {
+        color: #06b6d4;
+      }
+      .code-string {
+        color: #c5cbd6;
+      }
+      .code-number {
+        color: #ff9b7a;
+      }
+      .code-muted {
+        color: #596270;
+      }
+      .terminal-line {
+        animation: reveal 0.35s ease both;
+      }
+      @keyframes reveal {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="noise overflow-x-hidden selection:bg-cyan/30">
+    <header
+      class="sticky top-0 z-50 border-b hairline bg-ink/95 backdrop-blur-md"
+    >
+      <nav
+        class="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 lg:px-8"
+        aria-label="Main navigation"
+      >
+        <a
+          href="#top"
+          class="flex items-center gap-2.5 font-display text-[15px] font-semibold tracking-tight text-white"
+          ><span
+            class="flex h-7 w-7 items-center justify-center border border-cyan/50 bg-cyan/10 text-cyan"
+            ><i data-lucide="ghost" class="h-4 w-4"></i
+          ></span>
+          GHOSTTESTER <span class="text-zinc-500">/ AI</span></a
+        >
+        <div
+          class="hidden items-center gap-7 font-mono text-[11px] text-zinc-500 md:flex"
+        >
+          <a class="transition hover:text-cyan" href="#brief">01 / Brief</a
+          ><a class="transition hover:text-cyan" href="#pipeline"
+            >02 / Pipeline</a
+          ><a class="transition hover:text-cyan" href="#sdk">03 / SDK</a
+          ><a class="transition hover:text-cyan" href="#specs">04 / Specs</a>
+        </div>
+        <a
+          href="#sdk"
+          class="inline-flex items-center gap-2 border border-zinc-600 bg-zinc-800 px-3.5 py-2 font-mono text-xs font-medium text-white shadow-insetButton transition hover:border-white hover:bg-transparent"
+          >Launch App <i data-lucide="arrow-up-right" class="h-3.5 w-3.5"></i
+        ></a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section
+        class="mx-auto max-w-7xl border-x hairline px-5 pb-20 pt-16 lg:px-8 lg:pb-28 lg:pt-24"
+      >
+        <div
+          class="grid items-center gap-14 lg:grid-cols-[.9fr_1.1fr] lg:gap-20"
+        >
+          <div>
+            <div
+              class="mb-7 inline-flex items-center gap-2 border border-cyan/30 bg-cyan/[.04] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[.18em] text-cyan"
+            >
+              <span class="h-1.5 w-1.5 bg-cyan"></span> Built by Game Devs, for
+              Game Devs
+            </div>
+            <p class="mb-5 font-mono text-xs text-zinc-600">
+              ghosttester-sdk / v0.9.41 / local-first
+            </p>
+            <h1
+              class="max-w-xl font-display text-5xl font-semibold leading-[1.04] tracking-[-.04em] text-white sm:text-6xl lg:text-[4.7rem]"
+            >
+              Stop walking into walls.
+            </h1>
+            <p
+              class="mt-2 max-w-xl font-display text-3xl font-medium leading-tight tracking-[-.03em] text-zinc-500 sm:text-4xl"
+            >
+              Let autonomous telemetry find your
+              <span class="text-orange">collision leaks.</span>
+            </p>
+            <p class="mt-7 max-w-lg text-base leading-7 text-zinc-400">
+              GhostTester is a Unity and Unreal SDK that turns chaotic NPC
+              movement into actionable collision evidence, before your release
+              build reaches players.
+            </p>
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="#"
+                onclick="triggerSDKDownload(event)"
+                class="sdk-button inline-flex items-center justify-center gap-2 border border-orange bg-orange px-4 py-3 font-mono text-xs font-medium text-white shadow-insetButton transition hover:bg-[#ff6b3d] active:translate-y-px active:shadow-none"
+                ><i data-lucide="download" class="h-4 w-4"></i> Download Unity
+                SDK</a
+              ><a
+                href="#docs"
+                class="inline-flex items-center justify-center gap-2 border hairline bg-transparent px-4 py-3 font-mono text-xs text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                ><i data-lucide="book-open" class="h-4 w-4"></i> View
+                Documentation</a
+              >
+            </div>
+            <div
+              class="mt-10 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-wider text-zinc-600"
+            >
+              <span>Unity 2022.3+</span><span>Unreal 5.2+</span
+              ><span>No build upload</span>
+            </div>
+          </div>
+
+          <div class="border hairline bg-surface shadow-2xl">
+            <div
+              class="flex items-center justify-between border-b hairline px-4 py-3"
+            >
+              <div class="flex items-center gap-2">
+                <span class="h-2 w-2 bg-orange"></span
+                ><span class="font-mono text-[11px] text-zinc-400"
+                  >Unity Editor / GhostTester</span
+                >
+              </div>
+              <span
+                class="flex items-center gap-2 font-mono text-[10px] text-cyan"
+                ><span class="h-1.5 w-1.5 bg-cyan"></span> CONNECTED</span
+              >
+            </div>
+            <div
+              class="grid border-b hairline bg-[#0D0F12] px-4 py-3 sm:grid-cols-3"
+            >
+              <div>
+                <p class="font-mono text-[9px] uppercase text-zinc-600">
+                  Scene
+                </p>
+                <p class="mt-1 font-mono text-xs text-zinc-300">Map_Level_01</p>
+              </div>
+              <div>
+                <p class="font-mono text-[9px] uppercase text-zinc-600">
+                  Agent
+                </p>
+                <p class="mt-1 font-mono text-xs text-zinc-300">
+                  GhostTesterBot_01
+                </p>
+              </div>
+              <div>
+                <p class="font-mono text-[9px] uppercase text-zinc-600">
+                  State
+                </p>
+                <p class="mt-1 font-mono text-xs text-cyan">RECORDING</p>
+              </div>
+            </div>
+            <div
+              class="grid min-h-[330px] grid-cols-[38px_1fr] bg-[#0B0D10] font-mono text-[11px] leading-6"
+            >
+              <div class="border-r hairline px-3 pt-4 text-right text-zinc-700">
+                1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12
+              </div>
+              <pre
+                class="overflow-x-auto p-4 text-zinc-400"
+              ><span class="code-muted">{</span>
+  <span class="code-key">"event"</span>: <span class="code-string">"collision_breach"</span>,
+  <span class="code-key">"timestamp_ms"</span>: <span class="code-number">184029</span>,
+  <span class="code-key">"transform"</span>: {
+    <span class="code-key">"position"</span>: { <span class="code-key">"x"</span>: <span class="code-number">12.45</span>, <span class="code-key">"y"</span>: <span class="code-number">-4.20</span>,
+      <span class="code-key">"z"</span>: <span class="code-number">89.11</span> },
+    <span class="code-key">"velocity"</span>: { <span class="code-key">"x"</span>: <span class="code-number">2.14</span>, <span class="code-key">"y"</span>: <span class="code-number">0.00</span>, <span class="code-key">"z"</span>: <span class="code-number">6.80</span> }
+  },
+  <span class="code-key">"collider_type"</span>: <span class="code-string">"MeshCollider"</span>,
+  <span class="code-key">"layer_mask"</span>: <span class="code-string">"Environment.Solid"</span>,
+  <span class="code-key">"object_name"</span>: <span class="code-string">"NorthWall_A_07"</span>
+<span class="code-muted">}</span></pre>
+            </div>
+            <div
+              class="flex items-center justify-between border-t hairline px-4 py-2.5 font-mono text-[10px] text-zinc-600"
+            >
+              <span>telemetry buffer: 2.4 KB</span
+              ><span class="text-cyan">LOCAL PROCESS</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="brief" class="border-y hairline bg-[#0D0F12] py-20 lg:py-24">
+        <div class="mx-auto max-w-7xl px-5 lg:px-8">
+          <div
+            class="mb-10 flex flex-col justify-between gap-5 border-b hairline pb-6 sm:flex-row sm:items-end"
+          >
+            <div>
+              <p
+                class="font-mono text-[10px] uppercase tracking-[.2em] text-cyan"
+              >
+                01 / The brief
+              </p>
+              <h2
+                class="mt-3 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+              >
+                A small tool for a very specific release-day problem.
+              </h2>
+            </div>
+            <span class="font-mono text-[10px] text-zinc-600"
+              >README.md / WHY_GHOSTTESTER</span
+            >
+          </div>
+          <div class="grid border hairline md:grid-cols-2">
+            <div class="border-b hairline p-6 md:border-b-0 md:border-r lg:p-8">
+              <p class="font-mono text-xs text-cyan"># target_user</p>
+              <h3 class="mt-5 font-display text-2xl font-medium text-white">
+                For teams shipping complex 3D spaces.
+              </h3>
+              <p class="mt-4 text-sm leading-7 text-zinc-400">
+                Indie developers protecting their sanity during a tight release
+                schedule, plus AA/AAA QA teams that need more coverage than
+                human wall-walking can provide.
+              </p>
+              <div
+                class="mt-7 border-l-2 border-cyan pl-4 font-mono text-xs leading-6 text-zinc-500"
+              >
+                // Not a general-purpose test suite.<br />// A focused collision
+                signal for game teams.
+              </div>
+            </div>
+            <div class="p-6 lg:p-8">
+              <p class="font-mono text-xs text-orange"># pain_point</p>
+              <h3 class="mt-5 font-display text-2xl font-medium text-white">
+                Manual coverage misses the weird stuff.
+              </h3>
+              <p class="mt-4 text-sm leading-7 text-zinc-400">
+                A tester can spend hundreds of hours walking into walls, but
+                cannot recreate every jump, crouch, wall-hug, and high-velocity
+                edge case. One missed breach becomes a Day-1 crash or a costly
+                post-launch patch.
+              </p>
+              <div class="mt-7 font-mono text-xs text-zinc-600">
+                issue_status:
+                <span class="text-orange">unresolved_without_automation</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="pipeline"
+        class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-24"
+      >
+        <div class="mb-12 max-w-2xl">
+          <p class="font-mono text-[10px] uppercase tracking-[.2em] text-cyan">
+            02 / The AI core
+          </p>
+          <h2
+            class="mt-3 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+          >
+            A build pipeline for collision evidence.
+          </h2>
+          <p class="mt-4 leading-7 text-zinc-400">
+            No magic box. Three observable stages from movement data to a ticket
+            your team can triage.
+          </p>
+        </div>
+        <div class="relative grid gap-0 border-y hairline lg:grid-cols-3">
+          <div
+            class="absolute left-0 right-0 top-[57px] hidden border-t border-dashed border-zinc-700 lg:block"
+          ></div>
+          <article
+            class="relative border-b hairline p-6 lg:border-b-0 lg:border-r lg:p-8"
+          >
+            <div
+              class="relative z-10 mb-12 flex items-center justify-between bg-ink pr-3"
+            >
+              <span class="font-mono text-xs text-cyan">01 / CAPTURE</span
+              ><span class="font-mono text-lg text-zinc-600">_coordinates</span>
+            </div>
+            <h3 class="font-display text-xl font-medium text-white">
+              Autonomous Exploration
+            </h3>
+            <p class="mt-3 text-sm leading-6 text-zinc-500">
+              A lightweight reinforcement learning agent roams Unity or Unreal
+              maps, recreating chaotic player behavior across jump, crouch, and
+              wall-hug paths.
+            </p>
+          </article>
+          <article
+            class="relative border-b hairline p-6 lg:border-b-0 lg:border-r lg:p-8"
+          >
+            <div
+              class="relative z-10 mb-12 flex items-center justify-between bg-ink pr-3"
+            >
+              <span class="font-mono text-xs text-orange">02 / DETECT</span
+              ><span class="font-mono text-lg text-zinc-600"
+                >[breach_event]</span
+              >
+            </div>
+            <h3 class="font-display text-xl font-medium text-white">
+              Instant Collision Breach
+            </h3>
+            <p class="mt-3 text-sm leading-6 text-zinc-500">
+              When transform coordinates cross a solid mesh layer, the engine
+              pauses, captures the physics state, and preserves the exact
+              failing frame.
+            </p>
+          </article>
+          <article class="relative p-6 lg:p-8">
+            <div
+              class="relative z-10 mb-12 flex items-center justify-between bg-ink pr-3"
+            >
+              <span class="font-mono text-xs text-cyan">03 / REPORT</span
+              ><span class="font-mono text-lg text-zinc-600"
+                >-&gt; git_issue</span
+              >
+            </div>
+            <h3 class="font-display text-xl font-medium text-white">
+              LLM Reasoning &amp; Reporting
+            </h3>
+            <p class="mt-3 text-sm leading-6 text-zinc-500">
+              Telemetry and a frame snapshot become a structured report with
+              severity, coordinates, collider context, and a production-ready
+              JIRA ticket.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="sdk" class="border-y hairline bg-[#0D0F12] py-20 lg:py-24">
+        <div class="mx-auto max-w-7xl px-5 lg:px-8">
+          <div
+            class="mb-10 flex flex-col justify-between gap-5 border-b hairline pb-6 sm:flex-row sm:items-end"
+          >
+            <div>
+              <p
+                class="font-mono text-[10px] uppercase tracking-[.2em] text-cyan"
+              >
+                03 / Local engine integration
+              </p>
+              <h2
+                class="mt-3 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+              >
+                Install the plugin. Keep the build local.
+              </h2>
+            </div>
+            <span class="font-mono text-[10px] text-zinc-600"
+              >SDK_STATUS: READY</span
+            >
+          </div>
+          <div class="grid gap-6 lg:grid-cols-[.75fr_1.25fr]">
+            <div class="border hairline bg-surface p-6 lg:p-8">
+              <div
+                class="flex h-10 w-10 items-center justify-center border border-orange/40 bg-orange/10 text-orange"
+              >
+                <i data-lucide="package-plus" class="h-5 w-5"></i>
+              </div>
+              <h3 class="mt-7 font-display text-2xl font-medium text-white">
+                Seamless Engine Integration
+              </h3>
+              <p class="mt-4 text-sm leading-7 text-zinc-400">
+                Download our lightweight package, import it into Unity or Unreal
+                in 2 clicks, then attach the GhostTester script to any NPC or
+                autonomous test agent.
+              </p>
+              <div
+                class="mt-6 space-y-3 border-y hairline py-5 font-mono text-xs text-zinc-500"
+              >
+                <div class="flex justify-between">
+                  <span>source_code</span
+                  ><span class="text-cyan">stays_local</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>game_build</span
+                  ><span class="text-cyan">stays_local</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>external_upload</span
+                  ><span class="text-zinc-300">disabled</span>
+                </div>
+              </div>
+              <a
+                href="#"
+                onclick="triggerSDKDownload(event)"
+                class="mt-6 inline-flex w-full items-center justify-center gap-2 border border-orange bg-orange px-4 py-3 font-mono text-xs font-medium text-white shadow-insetButton transition hover:bg-[#ff6b3d] active:translate-y-px active:shadow-none"
+                ><i data-lucide="download" class="h-4 w-4"></i> Download Unity
+                SDK (.unitypackage)</a
+              >
+            </div>
+            <div class="overflow-hidden border hairline bg-[#080A0C]">
+              <div
+                class="flex items-center justify-between border-b hairline px-4 py-3"
+              >
+                <div
+                  class="flex items-center gap-2 font-mono text-xs text-zinc-400"
+                >
+                  <span class="h-2 w-2 bg-cyan"></span> Unity Console /
+                  ghosttester
+                </div>
+                <span class="font-mono text-[10px] text-zinc-600"
+                  >LOCAL ONLY</span
+                >
+              </div>
+              <div
+                class="min-h-[360px] space-y-3 p-5 font-mono text-xs leading-6 sm:p-6"
+              >
+                <p class="terminal-line">
+                  <span class="text-zinc-700">12:00:01.042</span>
+                  <span class="text-zinc-500">[OK]</span> SDK initialized in
+                  Map_Level_01
+                </p>
+                <p class="terminal-line" style="animation-delay: 0.08s">
+                  <span class="text-zinc-700">12:00:04.819</span>
+                  <span class="text-zinc-500">[OK]</span> 14,200 movement
+                  combinations executed
+                </p>
+                <p class="terminal-line" style="animation-delay: 0.16s">
+                  <span class="text-zinc-700">12:00:08.227</span>
+                  <span class="text-orange">[CRITICAL_BREACH]</span> Collision
+                  at Vector3(12.45, -4.20, 89.11)
+                </p>
+                <p class="terminal-line" style="animation-delay: 0.24s">
+                  <span class="text-zinc-700">12:00:08.228</span>
+                  <span class="text-orange">[CRITICAL_BREACH]</span>
+                  MeshCollider / Environment.Solid / NorthWall_A_07
+                </p>
+                <p class="terminal-line" style="animation-delay: 0.32s">
+                  <span class="text-zinc-700">12:00:09.091</span>
+                  <span class="text-white">[JIRA_API_SYNC]</span> Sending
+                  coordinates and object name only
+                </p>
+                <p class="terminal-line" style="animation-delay: 0.4s">
+                  <span class="text-zinc-700">12:00:11.540</span>
+                  <span class="text-white">[JIRA_API_SYNC]</span> Ticket #GT-402
+                  created / High Severity
+                </p>
+                <div
+                  class="mt-7 border-t hairline pt-4 text-[10px] text-zinc-700"
+                >
+                  telemetry: 2.4 KB / api_payload: 184 B / build_upload: false
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="specs" class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-24">
+        <div class="mb-10">
+          <p class="font-mono text-[10px] uppercase tracking-[.2em] text-cyan">
+            04 / Quality &amp; feasibility
+          </p>
+          <h2
+            class="mt-3 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+          >
+            Useful signal, honestly scoped.
+          </h2>
+        </div>
+        <div class="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
+          <div class="border hairline">
+            <div
+              class="grid grid-cols-[1.2fr_1fr_1fr] border-b hairline font-mono text-[10px] uppercase text-zinc-600"
+            >
+              <div class="p-4">Metric</div>
+              <div class="border-l hairline p-4">Manual</div>
+              <div class="border-l hairline p-4 text-cyan">GhostTester</div>
+            </div>
+            <div class="grid grid-cols-[1.2fr_1fr_1fr] font-mono text-xs">
+              <div class="border-b hairline p-4 text-zinc-400">
+                Time to coverage
+              </div>
+              <div class="border-b border-l hairline p-4 text-zinc-600">
+                48 hours
+              </div>
+              <div class="border-b border-l hairline p-4 text-cyan">1 hour</div>
+              <div class="border-b hairline p-4 text-zinc-400">Run cost</div>
+              <div class="border-b border-l hairline p-4 text-zinc-600">
+                High
+              </div>
+              <div class="border-b border-l hairline p-4 text-cyan">
+                $0.05 API
+              </div>
+              <div class="p-4 text-zinc-400">Human error</div>
+              <div class="border-l hairline p-4 text-zinc-600">High</div>
+              <div class="border-l hairline p-4 text-cyan">0%</div>
+            </div>
+          </div>
+          <div class="space-y-6">
+            <div class="border hairline bg-surface p-6">
+              <div class="flex items-center gap-3">
+                <i data-lucide="triangle-alert" class="h-4 w-4 text-orange"></i>
+                <h3 class="font-display text-lg font-medium text-white">
+                  Honest limitations
+                </h3>
+              </div>
+              <p class="mt-4 text-sm leading-7 text-zinc-500">
+                Minor false positives can occur on non-solid visual meshes such
+                as foliage or cloth curtains. The active bounding-box metadata
+                filter bypasses non-blocking layers.
+              </p>
+            </div>
+            <div class="border hairline bg-surface p-6">
+              <div class="flex items-center gap-3">
+                <i data-lucide="lock-keyhole" class="h-4 w-4 text-cyan"></i>
+                <h3 class="font-display text-lg font-medium text-white">
+                  Zero security risks
+                </h3>
+              </div>
+              <p class="mt-4 text-sm leading-7 text-zinc-500">
+                The SDK operates locally inside engine telemetry. Only
+                lightweight text strings, coordinates, and object names are sent
+                to the LLM API for report generation.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="docs" class="border-t hairline bg-[#08090B]">
+      <div
+        class="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-8 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between lg:px-8"
+      >
+        <div
+          class="flex items-center gap-2 font-display text-xs font-medium text-zinc-300"
+        >
+          <span
+            class="flex h-6 w-6 items-center justify-center border border-cyan/40 text-cyan"
+            ><i data-lucide="ghost" class="h-3.5 w-3.5"></i
+          ></span>
+          GHOSTTESTER / AI
+          <span class="ml-2 font-mono text-[10px] text-zinc-700"
+            >&copy; 2025 GhostTester, Inc.</span
+          >
+        </div>
+        <div class="flex items-center gap-5 font-mono text-[10px]">
+          <a
+            href="#"
+            aria-label="Source code"
+            class="transition hover:text-cyan"
+            ><i data-lucide="code-2" class="h-4 w-4"></i></a
+          ><a href="#" aria-label="Contact" class="transition hover:text-cyan"
+            ><i data-lucide="mail" class="h-4 w-4"></i></a
+          ><span class="flex items-center gap-2 text-cyan"
+            ><span class="h-1.5 w-1.5 bg-cyan"></span> ALL SYSTEMS
+            OPERATIONAL</span
+          >
+        </div>
+      </div>
+    </footer>
+    <script>
+      function triggerSDKDownload(event) {
+        event.preventDefault();
+
+        const readmeContent = "GhostTester AI SDK Initialization Framework Package\nGenerated via Hackathon Environment Submissions.";
+        const blob = new Blob([readmeContent], { type: "application/zip" });
+        const link = document.createElement("a");
+
+        link.href = URL.createObjectURL(blob);
+        link.download = "GhostTester_AI_SDK.zip";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      }
+
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
